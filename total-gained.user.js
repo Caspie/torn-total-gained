@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Total Gained
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.1.0
 // @description  Display total stat gained for selected period on the Log page.
 // @author       Caspie [2794025]
+// @license      MIT License
 // @match        https://www.torn.com/page.php?sid=log&log=5300
 // @match        https://www.torn.com/page.php?sid=log&log=5300&*
 // @match        https://www.torn.com/page.php?sid=log&log=5301
@@ -82,8 +83,8 @@
             );
         }
 
-        const totalGainedStart = panelContainer?.querySelector('tbody tr:last-child td:nth-child(4)')?.textContent.replaceAll(',','');
-        const totalGainedEnd = panelContainer?.querySelector('tbody tr:first-child td:nth-child(5)')?.textContent.replaceAll(',','');
+        const totalGainedStart = panelContainer?.querySelector('tbody tr:last-child td:nth-child(4)')?.textContent;
+        const totalGainedEnd = panelContainer?.querySelector('tbody tr:first-child td:nth-child(5)')?.textContent;
         const statName = panelContainer?.querySelector('thead tr:first-child th:nth-child(4)')?.textContent.split('_')[0];
         const totalEnergy = panelContainer?.querySelectorAll('tbody tr td:nth-child(3)');
         const totalHappy = panelContainer?.querySelectorAll('tbody tr td:nth-child(7)');
@@ -108,7 +109,7 @@
         };
 
         if (totalGainedStart && totalGainedEnd) {
-            const totalGained = Math.round(parseFloat(totalGainedEnd) - parseFloat(totalGainedStart)).toLocaleString();
+            const totalGained = Math.round(convertToFloat(totalGainedEnd) - convertToFloat(totalGainedStart)).toLocaleString();
             const energyUsed = calculateUsage(totalEnergy);
             const happyUsed = calculateUsage(totalHappy);
 
@@ -121,6 +122,17 @@
 
     const calculateUsage = (items) => {
         return Array.from(items).reduce((total, item) => total + parseInt(item.textContent), 0).toLocaleString();
+    }
+
+    const convertToFloat = (number) => {
+        if (!number) {
+            return number;
+        }
+
+        let localeTest = 1000;
+        localeTest = localeTest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        return parseFloat(number.replaceAll(localeTest[1], '').replace(localeTest[5], '.'))
     }
 
     const createElement = (el, parent, prepend = false) => {
